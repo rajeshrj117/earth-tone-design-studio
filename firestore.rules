@@ -1,0 +1,343 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================
+    // USER HELPERS
+    // =========================================================
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userExists() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function me() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      ).data;
+    }
+
+    function role() {
+      return me().role;
+    }
+
+    function isAdmin() {
+      return userExists() && role() == 'admin';
+    }
+
+    function isPM() {
+      return userExists() && role() == 'pm';
+    }
+
+    function isDesigner() {
+      return userExists() && role() == 'designer';
+    }
+
+    function isAccounts() {
+      return userExists() && role() == 'accounts';
+    }
+
+    function isClient() {
+      return userExists() && role() == 'client';
+    }
+
+    // =========================================================
+    // PROJECT ACCESS
+    // =========================================================
+
+    function hasProjectAccess(projectId) {
+      return userExists() &&
+        (
+          isAdmin() ||
+          me().projects == 'all' ||
+          (
+            me().projects is list &&
+            projectId in me().projects
+          )
+        );
+    }
+
+    // =========================================================
+    // USERS
+    // =========================================================
+
+    match /users/{uid} {
+
+      // User can read their own profile.
+      // Admin can read all users.
+      allow read: if userExists() &&
+        (
+          request.auth.uid == uid ||
+          isAdmin()
+        );
+
+      // Users can only change harmless UI/read-state fields.
+      allow update: if userExists() &&
+        request.auth.uid == uid &&
+        request.resource.data.diff(resource.data)
+          .affectedKeys()
+          .hasOnly([
+            'theme',
+            'read'
+          ]);
+
+      // User creation/deletion happens through trusted server code.
+      allow create, delete: if false;
+    }
+
+    // =========================================================
+    // PROJECTS
+    // =========================================================
+
+    match /projects/{projectId} {
+
+      allow read: if hasProjectAccess(projectId);
+
+      // Project creation/editing is server controlled.
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // CLIENTS
+    // =========================================================
+
+    match /clients/{clientId} {
+
+      allow read: if userExists() &&
+        (
+          isAdmin() ||
+          isPM() ||
+          isAccounts() ||
+          (
+            isClient() &&
+            request.auth.uid == clientId
+          )
+        );
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // GENERIC ETDS RECORDS
+    // =========================================================
+
+    match /records/{recordId} {
+
+      allow read: if
+        resource.data.p is string &&
+        hasProjectAccess(resource.data.p);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // PAYMENTS
+    // =========================================================
+
+    match /payments/{paymentId} {
+
+      // Admin/accounts/client can view authorized project payments.
+      allow read: if
+        resource.data.p is string &&
+        hasProjectAccess(resource.data.p) &&
+        (
+          isAdmin() ||
+          isAccounts() ||
+          isClient()
+        );
+
+      // IMPORTANT:
+      // Browser must never directly create/change payments.
+      // Server/Admin SDK handles manual payment recording,
+      // verification, receipts and status changes.
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // PAYMENT MILESTONES
+    // =========================================================
+
+    match /paymentMilestones/{milestoneId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // AGREEMENTS
+    // =========================================================
+
+    match /agreements/{agreementId} {
+
+      allow read: if
+        resource.data.p is string &&
+        hasProjectAccess(resource.data.p);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // CONSTRUCTION UPDATES
+    // =========================================================
+
+    match /constructionUpdates/{updateId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // FLOOR PLANS
+    // =========================================================
+
+    match /floorPlans/{floorPlanId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // 3D MODELS / PROPERTY VIEW
+    // =========================================================
+
+    match /propertyModels/{modelId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // CUSTOMER DOCUMENTS
+    // =========================================================
+
+    match /documents/{documentId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // MATERIALS
+    // =========================================================
+
+    match /materials/{materialId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // SITE VISITS
+    // =========================================================
+
+    match /siteVisits/{visitId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // SERVICE REQUESTS / COMPLAINTS
+    // =========================================================
+
+    match /serviceRequests/{requestId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // PROJECT EXPENSES
+    // =========================================================
+
+    match /expenses/{expenseId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId) &&
+        (
+          isAdmin() ||
+          isAccounts() ||
+          isPM()
+        );
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // HANDOVER
+    // =========================================================
+
+    match /handovers/{handoverId} {
+
+      allow read: if
+        resource.data.projectId is string &&
+        hasProjectAccess(resource.data.projectId);
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // NOTIFICATIONS
+    // =========================================================
+
+    match /notifications/{notificationId} {
+
+      // Notification should contain recipientUid.
+      allow read: if
+        resource.data.recipientUid == request.auth.uid ||
+        isAdmin();
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // AUDIT LOG
+    // =========================================================
+
+    match /audit/{auditId} {
+
+      // Audit logs are private to admins.
+      allow read: if isAdmin();
+
+      allow create, update, delete: if false;
+    }
+
+    // =========================================================
+    // DENY EVERYTHING ELSE
+    // =========================================================
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
