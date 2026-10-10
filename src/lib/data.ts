@@ -39,7 +39,8 @@ export const MODULES: ModDef[] = [
   { key: 'feedback', label: 'Feedback', icon: 'Star', roles: ['admin', 'pm', 'client'] },
 ];
 
-export type Project = { id: string; name: string; client: string; type: string; stage: string; progress: number; value: number; loc: string; img: string; start: string; handover: string; team: string[]; desc: string };
+export type GalleryImage = { url: string; name: string; path: string };
+export type Project = { id: string; name: string; client: string; type: string; stage: string; progress: number; value: number; loc: string; img: string; start: string; handover: string; team: string[]; desc: string; gallery?: GalleryImage[] };
 export const PROJECTS: Project[] = [
   { id: 'ETDS-2025-014', name: 'Sharma Residence — 4BHK Interiors', client: 'Sharma Family', type: 'Residential Interior', stage: 'Execution', progress: 58, value: 3850000, loc: 'Prestige Lakeside, Whitefield', img: 'living', start: '12 Jan 2026', handover: '30 Nov 2026', team: ['Meera Iyer', 'Kabir Rao'], desc: 'Warm-minimal 4BHK with arched niches, fluted oak panelling, travertine accents and a quiet earthy palette.' },
   { id: 'ETDS-2025-009', name: 'Rao Dental Clinic Fit-out', client: 'Dr. Kavitha Rao', type: 'Commercial Interior', stage: 'Snagging', progress: 88, value: 2200000, loc: 'Indiranagar, Bengaluru', img: 'clinic', start: '05 Mar 2026', handover: '25 Oct 2026', team: ['Meera Iyer'], desc: 'Calm, clinical-yet-human dental studio with sage panelling, concealed lighting and a boutique reception.' },

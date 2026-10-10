@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import Art from '@/components/Art';
+import Logo from '@/components/Logo';
 import { useApp } from '@/lib/store';
 
 export default function Login() {
@@ -19,16 +20,16 @@ export default function Login() {
         </div>
         <div className="absolute inset-0 hero-grad" />
         <div className="relative h-full p-14 flex flex-col justify-between text-white">
-          <div className="flex items-center gap-3"><div className="w-11 h-11 rounded-2xl grid place-items-center serif text-xl" style={{ background: '#b5654a' }}>E</div><div><div className="serif text-xl">Earth Tone Design Studio</div><div className="text-xs tracking-[.2em] uppercase opacity-70">Architecture · Interiors</div></div></div>
-          <div className="max-w-xl"><span className="glass inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs mb-5" style={{ color: '#fff' }}><Sparkles size={13} />Client project portal</span>
+          <Logo tone="light" width={190} />
+          <div className="max-w-xl"><span className="glass inline-flex mt-4 items-center gap-2 rounded-full px-3 py-1 text-xs mb-5" style={{ color: '#fff' }}><Sparkles size={13} />Client project portal</span>
             <h1 className="serif text-5xl leading-[1.08]">Every decision, payment and milestone — beautifully transparent.</h1>
             <p className="mt-5 opacity-80 text-lg">Approve designs, track site progress and settle stages in one calm, elegant place.</p></div>
-          <small className="opacity-60">Secured by Firebase Authentication · Live Firestore data</small>
+          <small className="opacity-60">Spaces with soul. Designed to last.</small>
         </div>
       </section>
       <section className="flex items-center justify-center p-6 md:p-12">
         <form onSubmit={go} className="w-full max-w-md space-y-5 fade">
-          <div><h2 className="serif text-4xl">Welcome back</h2><p className="muted mt-1">Sign in to your ETDS project portal</p></div>
+          <div><div className="lg:hidden mb-4"><Logo width={150} /></div><h2 className="script text-7xl" style={{ color: 'var(--brand)' }}>Welcome back</h2><p className="muted mt-1">Sign in to your ETDS project portal</p></div>
           <div><label className="text-xs font-semibold muted uppercase tracking-wider">Email</label><input className="input mt-1" value={email} onChange={e => setEmail(e.target.value)} /></div>
           <div><label className="text-xs font-semibold muted uppercase tracking-wider">Password</label><input className="input mt-1" type="password" value={pw} onChange={e => setPw(e.target.value)} /></div>
           {err && <p className="text-sm" style={{ color: 'var(--bad)' }}>{err}</p>}

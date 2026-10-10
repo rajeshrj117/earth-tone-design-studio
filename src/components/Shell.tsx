@@ -5,8 +5,9 @@ import { ComponentType, FormEvent, ReactNode, useEffect, useState } from 'react'
 import * as L from 'lucide-react';
 import { useApp, notifsFor } from '@/lib/store';
 import { ROLE_LABEL } from '@/lib/data';
+import Logo from '@/components/Logo';
 
-const THEMES = [['earth', '#b5654a'], ['sage', '#4f7a5e'], ['ink', '#2a2018']];
+const THEMES = [['earth', '#b5654a'], ['ink', '#2a2018']];
 export default function Shell({ children }: { children: ReactNode }) {
   const { ready, user, logout, theme, setTheme, toast, mods, myProjects, recs } = useApp();
   const r = useRouter(); const path = usePathname(); const [open, setOpen] = useState(false); const [q,setQ]=useState('');
@@ -26,7 +27,7 @@ export default function Shell({ children }: { children: ReactNode }) {
     <div className="min-h-screen lg:flex">
       <div className={'fixed inset-0 z-30 bg-black/50 lg:hidden ' + (open ? '' : 'hidden')} onClick={() => setOpen(false)} />
       <aside className={'side fixed inset-y-0 left-0 z-40 w-72 p-4 overflow-y-auto transition-transform lg:translate-x-0 ' + (open ? '' : '-translate-x-full')}>
-        <div className="flex items-center gap-3 px-2 mb-6"><div className="w-10 h-10 rounded-2xl grid place-items-center serif text-lg" style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}>E</div><div><div className="serif text-lg leading-tight">Earth Tone</div><div className="text-[11px] opacity-60 tracking-wider uppercase">Design Studio</div></div></div>
+        <Link href="/dashboard" onClick={() => setOpen(false)} className="flex justify-center px-2 pt-2 pb-6 mb-2 border-b" style={{ borderColor: '#ffffff1f' }}><Logo tone="light" width={150} /></Link>
         <nav className="space-y-1">{links.map(item)}
           <div className="text-[11px] uppercase tracking-widest opacity-50 px-3 pt-5 pb-1">{staff ? 'Workspace' : 'Your project'}</div>
           {mods.map(m => item([m.label, '/m/' + m.key, m.icon]))}
