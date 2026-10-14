@@ -45,12 +45,12 @@ export default function Users() {
     <Head eyebrow="Access control" title="Users & Permissions" sub="Create accounts, assign roles and project access. Sensitive changes are server-authorized." />
     <div className="flex justify-end mb-5"><button className="btn primary" onClick={()=>{reset();setOpen(true)}}><Plus size={15}/>New user</button></div>
     <div className="card p-4 md:p-6 mb-6 overflow-x-auto">
-      <table className="w-full text-sm"><thead><tr className="text-left muted text-xs uppercase tracking-wider"><th className="py-2">Name</th><th>Email</th><th>Role</th><th>Projects</th><th>Password</th><th>Status</th><th>Actions</th></tr></thead>
+      <table className="w-full text-sm"><thead><tr className="text-left muted text-xs uppercase tracking-wider"><th className="py-2">Name</th><th>Email</th><th>Role</th><th>Projects</th><th className="px-3">Password</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>{users.map(u=>
         <tr key={u.id} className="border-t" style={{borderColor:'var(--line)'}}>
           <td className="py-3 flex items-center gap-3"><span className="w-8 h-8 rounded-full overflow-hidden grid place-items-center text-white text-xs font-bold" style={{background:u.color}}>{u.avatarUrl?<ProtectedImage url={u.avatarUrl} token={token} className="w-full h-full object-cover"/>:u.name[0]}</span><b>{u.name}</b></td>
           <td className="muted">{u.email}</td><td><Pill s={ROLE_LABEL[u.role]}/></td>
-          <td className="muted">{u.projects==='all'?'All projects':u.projects.length+' assigned'}</td><td className="font-mono text-xs">{(u.id&&creds[u.id])||'—'}</td><td>{u.disabled?<Pill s="Disabled"/>:<Pill s="Active" />}</td>
+          <td className="muted">{u.projects==='all'?'All projects':u.projects.length+' assigned'}</td><td className="font-mono text-xs px-3">{(u.id&&creds[u.id])||'—'}</td><td>{u.disabled?<Pill s="Disabled"/>:<Pill s="Active" />}</td>
           <td><div className="flex gap-2"><button className="btn sm" onClick={()=>edit(u)}>Edit</button><button className="btn sm" onClick={()=>resetPw(u)}><RotateCcw size={13}/>Reset</button><button className="btn sm" onClick={()=>remove(u)}><Trash2 size={13}/>Delete</button><button className="btn sm" onClick={()=>toggle(u)}><UserX size={13}/>{u.disabled?'Enable':'Disable'}</button></div></td>
         </tr>
       )}</tbody></table>
