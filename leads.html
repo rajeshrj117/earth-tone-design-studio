@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chennai Leads</title>
+<style>
+:root{--bg:#f5f7f6;--card:#fff;--ink:#14231c;--mute:#5f6f67;--line:#dde4e0;--wa:#1a9d4f;--wa-d:#12793c}
+@media(prefers-color-scheme:dark){:root{--bg:#101714;--card:#18221d;--ink:#e8f0eb;--mute:#97a79e;--line:#2a3830}}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.4 system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:8;background:var(--card);border-bottom:1px solid var(--line)}
+nav{max-width:900px;margin:0 auto;display:flex;overflow-x:auto;padding:0 8px}
+nav a{padding:14px 14px;color:var(--mute);text-decoration:none;font-weight:600;white-space:nowrap;border-bottom:3px solid transparent}
+nav a.on{color:var(--ink);border-color:var(--wa)}
+nav small{font-weight:400;margin-left:4px}
+main{max-width:760px;margin:0 auto;padding:16px 16px 120px}
+h1{font-size:1.35rem;margin:6px 0 12px}
+.compose{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+textarea{width:100%;min-height:90px;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--bg);color:var(--ink);resize:vertical}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+button,label.btn{font:inherit;font-weight:600;border:0;border-radius:8px;padding:10px 16px;cursor:pointer;background:var(--wa);color:#fff}
+button:hover{background:var(--wa-d)}
+button.ghost,label.btn{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.ghost:hover,label.btn:hover{background:var(--line)}
+.note{color:var(--mute);font-size:.85rem}
+ul{list-style:none;margin:14px 0 0;padding:0}
+li{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+li.done{opacity:.5}
+li input{width:20px;height:20px;accent-color:var(--wa);flex:none}
+.info{flex:1;min-width:0}.nm{font-weight:600;overflow-wrap:anywhere}
+a.tel{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+a.wa{color:var(--wa);font-weight:600;text-decoration:none;border:1px solid var(--wa);border-radius:8px;padding:6px 10px;font-size:.9rem}
+a.call{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid var(--ink);color:var(--ink);flex:none}
+a.call:hover{background:var(--line)}
+.act{display:flex;gap:8px;align-items:center}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:10px;padding:20px;margin-top:14px;color:var(--mute)}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px;display:none;z-index:9}
+#bar div{max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+</style></head><body>
+<header><nav id="nav"></nav></header>
+<main>
+<h1 id="title"></h1>
+<div class="compose">
+<textarea id="msg" placeholder="Type your WhatsApp message here..."></textarea>
+<div class="row">
+<button id="sendAll">Send to all selected on WhatsApp</button>
+<button class="ghost" id="toggle">Select none</button>
+<span class="note" id="sel"></span>
+</div>
+<div class="row">
+<label class="btn"><input id="file" type="file" accept=".json,application/json" hidden></label>
+<button class="ghost" id="reset">Reset contacted</button>
+<button class="ghost" id="clearImp">Remove imported</button>
+</div>
+<p class="note" id="info" style="margin:8px 0 0">WhatsApp opens one chat at a time with your message filled in. Press Send in WhatsApp, come back here, and click Next.</p>
+</div>
+<ul id="list"></ul>
+</main>
+<div id="bar"><div><span id="prog"></span><span><button id="next">Open next chat</button> <button class="ghost" id="stop">Stop</button></span></div></div>
+<script>
+const B=[["Benah Builders & Developers","+91 79048 88810"],["JRM Construction","+91 72000 94121"],["King's Castle Builder","+91 80560 91323"],["KSA Construction","+91 78712 97666"],["SRT Works","+91 81486 33329"],["RB Construction Engineers and Contractors","+91 99529 22709"],["SPPS Construction India Pvt Ltd","+91 99421 16777"],["Uma Constructions","+91 44 2450 0802"],["DEEJOS Architects","+91 81100 00384"],["CTH Builders","+91 74016 50188"],["Dream Big Developers & Builders","+91 99411 30994"],["SK Construction & Builders","+91 99401 58807"],["Haritha Constructions","+91 98402 17791"],["High End Quality Constructions","+91 98429 90821"],["DR Builders & Developers","+91 99622 40004"],["Shikari Constructor","+91 90942 80781"],["JHS Builders and Contractors","+91 99525 25600"],["Kallu Veedu Construction","+91 72004 34868"],["BK Builders","+91 97890 04404"],["Build High Foundations","+91 75488 08579"],["Omtech Builders","+91 99621 24999"],["Deekshi Homes","+91 62625 65675"],["Skypearl Construction","+91 77080 63338"],["Subiksha Homes","+91 99629 95446"],["DM Homes & DM Construction","+91 94441 61444"],["Sri Narayani Construction","+91 72998 25348"],["Aakkash Builders","+91 98409 10091"],["VN Constructions","+91 94441 14187"],["SPPS Construction and Engineering Contractors","+91 99421 16777"],["Piriyaa Builders","+91 89399 54466"],["LB Construction","+91 96000 89359"],["CMR Construction","+91 99625 29503"],["JO Construction","+91 99948 45773"],["Bhuvaneshwari Constructions","+91 98410 43410"],["KP Civil Labour Contractor","+91 98844 22325"],["Mano Organic Landscape & Gardening","+91 90920 31173"],["VSR Swimming Pool","+91 98847 22427"],["NMR Constructions","+91 98400 66299"],["Creative Builder","+91 99402 27253"],["Suppliable Hardwares","+91 89259 28883"],["Stone Bridge Promoters","+91 98409 10048"],["RBS Construction","+91 93810 36117"],["C.J Builders","+91 98407 55453"],["Sri Ganesh Constructions","+91 88385 27901"],["Zenith Builders","+91 98401 37876"],["Sri Building Construction","+91 89396 91055"],["MR Constructions","+91 99402 69572"],["NEC Projects","+91 80729 34357"],["Casagrand Perch Builder","+91 74181 67898"],["RBG Builders and Interiors","+91 89393 61134"],["AS Building Contractors","+91 70954 55525"],["Ohmmm Builders","+91 44 2224 2737"],["Indian Construction Company","+91 98848 82515"],["Ranganayaki Builders","+91 90940 41681"],["Vijay Builders","+91 98415 62469"],["RR Engineers & Builders","+91 80 4811 2655"],["Krishna Builders","+91 98414 34100"],["R.S Construction","+91 98849 74984"],["PYRAMID CONSTRUCTION","+91 95661 68524"],["Star Roofs - Industrial & Indoor Badminton Roofing Construction Company OMR","+91 98411 85876"],["Green construction & interior","+91 97911 49521"],["Signature Plus Construction Company","+91 98842 38888"],["Architeca Design Build Firm","+91 95664 49911"],["Shankar construction & interior","+91 99405 33952"],["Sri Suprabhatham Builder","+91 99624 82979"],["Mascons Engineering And Contracting Company","+91 94440 60003"],["Bala Abirami Builders & Developers Pvt Ltd","+91 98840 61647"],["VK CONSTRUCTION","+91 90473 84441"],["Builders Plaza","+91 44 6565 0564"],["VRB Constructions","+91 44 6457 6888"],["Sarvayogam Builders","+91 44 4260 2529"],["Nithya Builders","+91 88381 45088"],["T M Construction","+91 98843 44090"],["MARA POOLS SERVICES","+91 99520 46089"],["SRI GANESH CONSTRUCTIONS","+91 99419 55470"],["Five D Engineers","+91 93604 89953"],["AKS Roofing","+91 99411 07749"],["Jehovah Builders Pvt Ltd.,","+91 44 4353 2082"],["Keerthi Promoters","+91 74014 74024"],["ASWIN FOUNDATIONS PVT LTD","+91 98844 08338"],["Elite Contractors Chennai Private Limited","+91 44 2829 3041"],["OLS constructions private Limited","+91 91590 68893"],["Ganesan Builders Pvt Limited","+91 44 2499 5172"],["Golden bricks builders & interiors building restoration service","+91 94985 54009"],["Salma Constructions","+91 91766 21230"]];
+const I=[["Sai Interiors", "+91 80560 73989"], ["D'LIFE Interiors ECR", "+91 80789 08888"], ["RGL Decors", "+91 86374 20482"], ["WeCreate Interiors and Decors", "+91 90259 28191"], ["Unicorn Interiors", "+91 87544 76333"], ["Ample Motif Interiors", "+91 89393 99074"], ["Ds Prism Studio", "+91 86086 44554"], ["Dream Home Decor", "+91 86675 88266"], ["RK Interior Studio", "+91 89392 33004"], ["Studio 1 Interiors OMR", "+91 99626 28862"], ["Aram Interiors", "+91 79046 66821"], ["Hi Tech Interiors", "+91 98405 94534"], ["Apex Interior", "+91 95000 82782"], ["C2D Interiors", "+91 80155 50408"], ["Bricks N Beams", "+91 73388 34435"], ["Design Star Art Studio", "+91 98400 63554"], ["Hem Designs", "+91 75500 44696"], ["Arkitecture Forum", "+91 99400 68715"], ["SJ Interior and Works", "+91 98400 82307"], ["GM5 Interiors", "+91 98410 77550"], ["Interior Point", "+91 44 2453 0777"], ["JRM Construction", "+91 72000 94121"], ["AH Architecture Interior Designer", "+91 72996 00600"], ["Bricky Box Associates - Architects", "+91 98402 79082"], ["Sri Sai Interior", "+91 78459 10515"], ["D2V Architectural Consultancy & Interiors", "+91 72009 66816"], ["Styling Spaces", "+91 63796 46838"], ["Bizzoppo Interiors", "+91 86672 23919"], ["Quintae Architects", "+91 77083 19081"], ["Peril Interiors", "+91 98418 33554"], ["Unicorn Promoters/Interiors/Construction", "+91 87544 76333"], ["Studio Arkitecture Forum", "+91 88385 36420"], ["Comfort Interiors", "+91 99622 13107"], ["iD Interiors", "+91 98846 08007"], ["Kalyani Interior Designers", "+91 98407 16006"], ["Ramanan Arumugam Architects", "+91 87544 06614"], ["Tint Tone and Shade", "+91 95977 12001"], ["Dream Interiors Perumbakkam", "+91 99448 90023"], ["Decorpot Interior Designers", "+91 91086 02000"], ["Taj Interior Designers OMR", "+91 82480 28093"], ["Livspace OMR", "+91 80 4775 9109"], ["Alankara Design Studio", "+91 99402 58072"], ["OMR Interiors", "+91 98416 50973"], ["D2M Interior", "+91 90434 11314"], ["Phoenix Interior", "+91 98402 86444"], ["Home Krafter (decor shop)", "+91 98413 66766"], ["Anbre Interiors", "+91 98844 88892"], ["Spacey Interiors", "+91 72008 54111"], ["Luvmadspace Interiors", "+91 90438 78729"], ["Vrundavan Tile and Bath Gallery", "+91 93619 66551"]];
+const cats=[
+ {id:"builders",label:"Builders & Contractors",data:B,q:"builders and contractors"},
+
+ {id:"interiors",label:"Interior Designers",data:I,q:"interior designers"}];
+const $=id=>document.getElementById(id),list=$("list"),msg=$("msg");
+const LS={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const dig=p=>{let d=p.replace(/\D/g,"");if(d.length==10)d="91"+d;else if(d[0]=="0")d="91"+d.slice(1);return d};
+const mob=p=>/\s/.test(p.trim())?/^\+91 \d{5} \d{5}$/.test(p.trim()):/^(\+?91)?[6-9]\d{9}$/.test(p.replace(/[^\d+]/g,""));
+const comp=n=>/archit|arkitect/i.test(n);
+let done=new Set(LS.get("done",[])),cur,L=[],queue=[],pos=0;
+msg.value=LS.get("msg","");msg.oninput=()=>LS.set("msg",msg.value);
+
+function leads(c){const seen=new Set();
+ return [...c.data,...LS.get("imp_"+c.id,[])].map(([n,p])=>{const d=dig(p),m=mob(p),x=comp(n),dup=seen.has(d);seen.add(d);return{n,p,d,m,x,dup,sel:m&&!x&&!dup&&!done.has(d)}})}
+const wa=l=>"https://wa.me/"+l.d+"?text="+encodeURIComponent(msg.value.trim());
+const mark=l=>{done.add(l.d);LS.set("done",[...done])};
+const ICON='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg>';
+
+function show(){
+ cur=cats.find(c=>c.id==location.hash.slice(1))||cats[0];
+ $("nav").innerHTML=cats.map(c=>`<a href="#${c.id}" class="${c==cur?"on":""}">${c.label}<small>${leads(c).length}</small></a>`).join("");
+ L=leads(cur);$("title").textContent=cur.label+" in Chennai";document.title=cur.label+" | Leads";
+ $("bar").style.display="none";render();
+}
+function render(){
+ list.innerHTML="";
+ if(!L.length){list.innerHTML=`<div class="empty"><b>No leads here yet.</b><br>In Apify, run Google Maps Lead Finder with Location "Chennai", Search query "${cur.q}" and Max results 100. Download the dataset as JSON, then click Import Apify JSON above.</div>`}
+ L.forEach(l=>{
+  const li=document.createElement("li");if(done.has(l.d))li.className="done";
+  li.innerHTML=`<input type="checkbox" ${l.sel?"checked":""} ${l.m?"":"disabled"}>
+  <div class="info"><div class="nm"></div><a class="tel" href="tel:+${l.d}">${l.p}</a>${l.m?"":' <span class="note">(landline, no WhatsApp)</span>'}${l.x?' <span class="note">(architect, competitor, unticked)</span>':""}${l.dup?' <span class="note">(same number as a lead above, unticked)</span>':""}</div>
+  <div class="act"><a class="call" href="tel:+${l.d}" aria-label="Call ${l.p}" title="Call">${ICON}</a>${l.m?'<a class="wa" target="_blank" rel="noopener">WhatsApp</a>':""}</div>`;
+  li.querySelector(".nm").textContent=l.n;
+  li.querySelector("input").onchange=e=>{l.sel=e.target.checked;stats()};
+  const a=li.querySelector("a.wa");
+  if(a)a.onclick=e=>{e.preventDefault();open(wa(l),"_blank");mark(l);li.classList.add("done")};
+  li.querySelector("a.call").onclick=()=>{mark(l);li.classList.add("done")};
+  list.appendChild(li);
+ });
+ stats();
+}
+function stats(){const n=L.filter(l=>l.sel&&l.m).length;$("sel").textContent=n+" selected of "+L.length;$("toggle").textContent=n?"Select none":"Select all"}
+$("toggle").onclick=()=>{const any=L.some(l=>l.sel&&l.m);L.forEach(l=>{if(l.m)l.sel=!any});render()};
+$("reset").onclick=()=>{if(confirm("Mark everyone as not contacted?")){done=new Set();LS.set("done",[]);show()}};
+$("clearImp").onclick=()=>{if(confirm("Remove leads you imported on this page?")){LS.set("imp_"+cur.id,[]);show()}};
+
+function step(){
+ if(pos>=queue.length){$("bar").style.display="none";alert("Done. All chats opened.");render();return}
+ const l=queue[pos++];open(wa(l),"_blank");mark(l);
+ $("prog").textContent="Chat "+pos+" of "+queue.length+": "+l.n;
+ $("next").textContent=pos<queue.length?"Open next chat":"Finish";
+}
+$("sendAll").onclick=()=>{
+ if(!msg.value.trim()){alert("Type your message first.");msg.focus();return}
+ const u=new Set();queue=L.filter(l=>l.sel&&l.m&&!u.has(l.d)&&u.add(l.d));
+ if(!queue.length){alert("Select at least one number.");return}
+ pos=0;$("bar").style.display="block";step();
+};
+$("next").onclick=step;
+$("stop").onclick=()=>{$("bar").style.display="none";render()};
+
+$("file").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+  const a=JSON.parse(await f.text()),add=[];
+  (Array.isArray(a)?a:[]).forEach(o=>{const n=o.name||o.title||o.businessName,p=o.phone||o.phoneNumber||o.phoneUnformatted;if(n&&p)add.push([String(n),String(p)])});
+  const have=new Set(leads(cur).map(l=>l.d)),fresh=add.filter(([n,p])=>{const d=dig(p);if(have.has(d))return false;have.add(d);return true});
+  LS.set("imp_"+cur.id,[...LS.get("imp_"+cur.id,[]),...fresh]);const n=fresh.length;
+  $("info").textContent="Added "+n+" new leads. Skipped "+(add.length-n)+" duplicates.";
+ }catch(err){alert("Could not read this file. Use the JSON export from Apify.")}
+ e.target.value="";show();
+};
+addEventListener("hashchange",show);show();
+</script></body></html>
