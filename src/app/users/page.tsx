@@ -31,9 +31,9 @@ export default function Users() {
   const edit=(u:User)=>{setAvatar(null);setEditing(u);setName(u.name);setEmail(u.email);setRole(u.role);setTitle(u.title);setClientId(u.clientId||'');setAssigned(u.projects==='all'?projects.map(p=>p.id):u.projects);setOpen(true)};
   const save=async()=>{try{
     if(!name.trim()||(!editing&&!email.trim())) throw new Error('Name and email are required');
-    if(!editing&&password.length<10) throw new Error('Password must be at least 10 characters');
-    let avatarUrl=editing?.avatarUrl||''; if(avatar&&assigned[0]){const u=await upload(avatar,assigned[0],'avatars');if(u)avatarUrl=u.url;} await callAdmin('/api/admin/users',editing?{action:'update',id:editing.id,name,email,role,projects:assigned,title,clientId,avatarUrl}:{name,email,role,projects:assigned,title,clientId,avatarUrl,password});
-    say(editing?'User updated':'User created');reset();
+    if((!editing||password)&&password.length<10) throw new Error('Password must be at least 10 characters');
+    let avatarUrl=editing?.avatarUrl||''; if(avatar&&assigned[0]){const u=await upload(avatar,assigned[0],'avatars');if(u)avatarUrl=u.url;} await callAdmin('/api/admin/users',editing?{action:'update',id:editing.id,name,email,role,projects:assigned,title,clientId,avatarUrl,password}:{name,email,role,projects:assigned,title,clientId,avatarUrl,password});
+    say(editing?(password?'User updated; password changed':'User updated'):`User created. Login: ${email.trim()} / ${password}`);reset();
   }catch(e){say(e instanceof Error?e.message:'Save failed')}};
   const remove=async(u:User)=>{if(!u.id||!window.confirm(`Delete ${u.name}? This permanently removes the account.`))return;try{await callAdmin('/api/admin/users',{action:'delete',id:u.id});say('User deleted')}catch(e){say(e instanceof Error?e.message:'Delete failed')}};
   const toggle=async(u:User)=>{try{await callAdmin('/api/admin/users',{action:'deactivate',id:u.id,disabled:!u.disabled});say(u.disabled?'Account enabled':'Account disabled')}catch(e){say(e instanceof Error?e.message:'Action failed')}};
@@ -63,7 +63,7 @@ export default function Users() {
       <div className="space-y-3 mt-5">
         <input className="input" placeholder="Full name" value={name} onChange={e=>setName(e.target.value)}/>
         <input className="input" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/>
-        {!editing&&<input className="input" type="text" placeholder="Password (min 10 characters)" value={password} onChange={e=>setPassword(e.target.value)}/>}
+        <input className="input" type="text" placeholder={editing?'New password (leave blank to keep current)':'Password (min 10 characters)'} value={password} onChange={e=>setPassword(e.target.value)}/>
         <input className="input" placeholder="Job title" value={title} onChange={e=>setTitle(e.target.value)}/>
         <select className="input" value={role} onChange={e=>setRole(e.target.value as Role)}>{roles.map(r=><option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select>
         {role==='client'&&<select className="input" value={clientId} onChange={e=>setClientId(e.target.value)}><option value="">Link client record</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>}

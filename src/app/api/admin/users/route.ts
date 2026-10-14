@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
         return Response.json({ resetLink: link });
       }
       if (b.action === 'delete') { if (b.id === actorUid) throw new Error('FORBIDDEN'); const u = await auth.getUser(b.id); await db.doc(`users/${b.id}`).delete(); await auth.deleteUser(b.id); await audit(actorUid, profile, `Deleted user ${u.email}`, ''); return Response.json({ ok: true }); }
+      if (b.password && b.password.length < 10) return Response.json({ error: 'Password must be at least 10 characters' }, { status: 400 });
       const ref = db.doc(`users/${b.id}`); const snap = await ref.get();
       if (!snap.exists) return Response.json({ error: 'User not found' }, { status: 404 });
       const old = snap.data() as User;
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
         ...(b.name !== undefined ? { displayName: b.name } : {}),
         ...(b.email !== undefined ? { email: b.email } : {}),
         ...(b.disabled !== undefined ? { disabled: b.disabled } : {}),
+        ...(b.password ? { password: b.password } : {}),
       });
       await audit(actorUid, profile, `${b.action === 'deactivate' ? 'Deactivated' : 'Updated'} user ${old.email}`, '');
       return Response.json({ ok: true });
