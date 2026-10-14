@@ -1,6 +1,6 @@
 'use client';
 import FormatHint from '@/components/FormatHint';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Check, Minus, Plus, UserX, RotateCcw, Trash2 } from 'lucide-react';
 import Shell from '@/components/Shell';
 import { Empty, Head, Pill } from '@/components/ui';
@@ -23,7 +23,9 @@ export default function Users() {
   const {user,users,projects,clients,say,upload,token}=useApp(); const [avatar,setAvatar]=useState<File|null>(null);
   const [open,setOpen]=useState(false), [editing,setEditing]=useState<User|null>(null);
   const [name,setName]=useState(''),[email,setEmail]=useState(''),[role,setRole]=useState<Role>('client');
-  const [password,setPassword]=useState('');
+  const [password,setPassword]=useState(''); const [creds,setCreds]=useState<Record<string,string>>({});
+  const loadCreds=useCallback(async()=>{try{const r=await callAdmin('/api/admin/users',{action:'credentials'});setCreds(r.creds||{})}catch{}},[]);
+  useEffect(()=>{if(user?.role==='admin')loadCreds()},[user?.role,loadCreds]);
   const [title,setTitle]=useState(''),[clientId,setClientId]=useState(''),[assigned,setAssigned]=useState<string[]>([]);
 
   if(user&&user.role!=='admin') return <Shell><Empty text="User management is restricted to administrators." /></Shell>;
@@ -33,9 +35,9 @@ export default function Users() {
     if(!name.trim()||(!editing&&!email.trim())) throw new Error('Name and email are required');
     if((!editing||password)&&password.length<10) throw new Error('Password must be at least 10 characters');
     let avatarUrl=editing?.avatarUrl||''; if(avatar&&assigned[0]){const u=await upload(avatar,assigned[0],'avatars');if(u)avatarUrl=u.url;} await callAdmin('/api/admin/users',editing?{action:'update',id:editing.id,name,email,role,projects:assigned,title,clientId,avatarUrl,password}:{name,email,role,projects:assigned,title,clientId,avatarUrl,password});
-    say(editing?(password?'User updated; password changed':'User updated'):`User created. Login: ${email.trim()} / ${password}`);reset();
+    loadCreds();say(editing?(password?'User updated; password changed':'User updated'):`User created. Login: ${email.trim()} / ${password}`);reset();
   }catch(e){say(e instanceof Error?e.message:'Save failed')}};
-  const remove=async(u:User)=>{if(!u.id||!window.confirm(`Delete ${u.name}? This permanently removes the account.`))return;try{await callAdmin('/api/admin/users',{action:'delete',id:u.id});say('User deleted')}catch(e){say(e instanceof Error?e.message:'Delete failed')}};
+  const remove=async(u:User)=>{if(!u.id||!window.confirm(`Delete ${u.name}? This permanently removes the account.`))return;try{await callAdmin('/api/admin/users',{action:'delete',id:u.id});loadCreds();say('User deleted')}catch(e){say(e instanceof Error?e.message:'Delete failed')}};
   const toggle=async(u:User)=>{try{await callAdmin('/api/admin/users',{action:'deactivate',id:u.id,disabled:!u.disabled});say(u.disabled?'Account enabled':'Account disabled')}catch(e){say(e instanceof Error?e.message:'Action failed')}};
   const resetPw=async(u:User)=>{try{await sendPasswordResetEmail(auth,u.email);say('Password reset email sent')}catch(e){say(e instanceof Error?e.message:'Could not send reset email')}};
 
@@ -43,12 +45,12 @@ export default function Users() {
     <Head eyebrow="Access control" title="Users & Permissions" sub="Create accounts, assign roles and project access. Sensitive changes are server-authorized." />
     <div className="flex justify-end mb-5"><button className="btn primary" onClick={()=>{reset();setOpen(true)}}><Plus size={15}/>New user</button></div>
     <div className="card p-4 md:p-6 mb-6 overflow-x-auto">
-      <table className="w-full text-sm"><thead><tr className="text-left muted text-xs uppercase tracking-wider"><th className="py-2">Name</th><th>Email</th><th>Role</th><th>Projects</th><th>Status</th><th>Actions</th></tr></thead>
+      <table className="w-full text-sm"><thead><tr className="text-left muted text-xs uppercase tracking-wider"><th className="py-2">Name</th><th>Email</th><th>Role</th><th>Projects</th><th>Password</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>{users.map(u=>
         <tr key={u.id} className="border-t" style={{borderColor:'var(--line)'}}>
           <td className="py-3 flex items-center gap-3"><span className="w-8 h-8 rounded-full overflow-hidden grid place-items-center text-white text-xs font-bold" style={{background:u.color}}>{u.avatarUrl?<ProtectedImage url={u.avatarUrl} token={token} className="w-full h-full object-cover"/>:u.name[0]}</span><b>{u.name}</b></td>
           <td className="muted">{u.email}</td><td><Pill s={ROLE_LABEL[u.role]}/></td>
-          <td className="muted">{u.projects==='all'?'All projects':u.projects.length+' assigned'}</td><td>{u.disabled?<Pill s="Disabled"/>:<Pill s="Active" />}</td>
+          <td className="muted">{u.projects==='all'?'All projects':u.projects.length+' assigned'}</td><td className="font-mono text-xs">{creds[u.id]||'—'}</td><td>{u.disabled?<Pill s="Disabled"/>:<Pill s="Active" />}</td>
           <td><div className="flex gap-2"><button className="btn sm" onClick={()=>edit(u)}>Edit</button><button className="btn sm" onClick={()=>resetPw(u)}><RotateCcw size={13}/>Reset</button><button className="btn sm" onClick={()=>remove(u)}><Trash2 size={13}/>Delete</button><button className="btn sm" onClick={()=>toggle(u)}><UserX size={13}/>{u.disabled?'Enable':'Disable'}</button></div></td>
         </tr>
       )}</tbody></table>
