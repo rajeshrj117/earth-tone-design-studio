@@ -4,10 +4,13 @@ import { requireUser, canProject, errorResponse, audit } from '@/lib/server-auth
 import { adminDb } from '@/lib/firebase-admin';
 import { rateLimit } from '@/lib/rate-limit';
 
+// Map module names sent by the client to storage kinds
+const KIND_ALIASES:Record<string,string>={floorplans:'floor-plans',quotations:'quotation-attachments',variations:'variation-attachments',materials:'material-samples',approvals:'approval-images',expenses:'expense-receipts'};
+
 export async function POST(req:NextRequest){
  try{
   const {uid,profile}=await requireUser(req); await rateLimit('upload',uid,40,600); const form=await req.formData();
-  const file=form.get('file'); const projectId=String(form.get('projectId')||''); const kind=String(form.get('kind')||'documents');
+  const file=form.get('file'); const projectId=String(form.get('projectId')||''); const rawKind=String(form.get('kind')||'documents'); const kind=KIND_ALIASES[rawKind]||rawKind;
   if(!(file instanceof File)||!projectId||!canProject(profile,projectId))throw new Error('FORBIDDEN');
   if(file.size>15*1024*1024)return Response.json({error:'Maximum file size is 15 MB'},{status:413});
   const ext=file.name.toLowerCase().split('.').pop()||'';
