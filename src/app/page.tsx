@@ -8,7 +8,8 @@ import { useApp } from '@/lib/store';
 
 export default function Login() {
   const { ready, user, login } = useApp(); const r = useRouter();
-  const [email, setEmail] = useState(''); const [pw, setPw] = useState(''); const [err, setErr] = useState('');
+  // Demo mode: login form is pre-filled. Change or clear these two values to turn it off.
+  const [email, setEmail] = useState('admin@etds.in'); const [pw, setPw] = useState('ETDSDemo@2026'); const [err, setErr] = useState('');
   useEffect(() => { if (ready && user) r.replace('/dashboard'); }, [ready, user, r]);
   const [busy, setBusy] = useState(false);
   const go = async (e: React.FormEvent) => { e.preventDefault(); setBusy(true); setErr(''); const res = await login(email, pw); setBusy(false); if (res.ok) r.push('/dashboard'); else setErr(res.msg || 'Invalid email or password.'); };
