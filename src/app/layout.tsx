@@ -1,5 +1,6 @@
 import './globals.css';
 import type { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { AppProvider } from '@/lib/store';
 
@@ -25,7 +26,19 @@ const script = localFont({
   variable: '--font-script', display: 'swap',
 });
 
-export const metadata = { title: 'ETDS Project Portal', description: 'Earth Tone Design Studio — Spaces with soul. Designed to last.' };
+const SITE_URL = 'https://earth-tone-design-studio.vercel.app';
+const TITLE = 'Earth Tone Design Studio — Client Project Portal';
+const DESCRIPTION = 'Approve designs, track site progress and settle stages in one place. Architecture & interior design — spaces with soul, designed to last.';
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    type: 'website', url: SITE_URL, siteName: 'Earth Tone Design Studio', title: TITLE, description: DESCRIPTION,
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Earth Tone Design Studio — Architecture | Interior' }],
+  },
+  twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION, images: ['/og-image.jpg'] },
+};
 export default function Layout({ children }: { children: ReactNode }) {
   return <html lang="en" data-theme="earth" data-scroll-behavior="smooth" className={`${montserrat.variable} ${lato.variable} ${script.variable}`}><body><AppProvider>{children}</AppProvider></body></html>;
 }
